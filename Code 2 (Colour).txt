@@ -1,0 +1,268 @@
+package com.company;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.RingPlot;
+import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.BarRenderer3D;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class CombinedChart extends JFrame {
+
+    private DefaultPieDataset pieDataset;
+    private DefaultCategoryDataset barDataset;
+    private DefaultCategoryDataset lineDataset;
+    private DefaultCategoryDataset areaDataset; // New dataset for area chart
+    private DefaultPieDataset ringDataset; // New dataset for ring chart
+
+    private JFreeChart chart;
+    private ChartPanel chartPanel;
+
+    private DefaultTableModel tableModel;
+    private JTable dataTable;
+
+    private JComboBox<String> chartTypeComboBox;
+
+    public CombinedChart(String title) {
+        super(title);
+
+        pieDataset = new DefaultPieDataset();
+        barDataset = new DefaultCategoryDataset();
+        lineDataset = new DefaultCategoryDataset();
+        areaDataset = new DefaultCategoryDataset(); // Initialize the new dataset
+        ringDataset = new DefaultPieDataset(); // Initialize the new dataset
+
+        chart = createPieChart(pieDataset);
+        chartPanel = new ChartPanel(chart);
+
+        setLayout(new BorderLayout());
+
+        tableModel = new DefaultTableModel(new Object[]{"Category", "Value"}, 0);
+        dataTable = new JTable(tableModel);
+
+        JScrollPane scrollPane = new JScrollPane(dataTable);
+        add(scrollPane, BorderLayout.SOUTH);
+
+        chartTypeComboBox = new JComboBox<>(new String[]{"2D Pie Chart", "3D Pie Chart", "2D Bar Chart",
+                "3D Bar Chart", "2D Line Chart", "Area Chart", "Ring Chart"});
+        chartTypeComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateChart();
+            }
+        });
+
+        JPanel controlPanel = new JPanel();
+        controlPanel.add(chartTypeComboBox);
+        add(controlPanel, BorderLayout.NORTH);
+
+        add(chartPanel, BorderLayout.CENTER);
+
+        JButton addButton = new JButton("Add Data");
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addData();
+            }
+        });
+
+        JButton resetAllButton = new JButton("Reset All Data");
+        resetAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetAllData();
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(addButton);
+        buttonPanel.add(resetAllButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private JFreeChart createPieChart(DefaultPieDataset dataset) {
+        JFreeChart chart = ChartFactory.createPieChart(
+                "PIE CHART 2-D",
+                dataset,
+                true,
+                true,
+                false
+        );
+
+        PiePlot plot = (PiePlot) chart.getPlot();
+        plot.setSectionPaint("Values", new Color(255, 0, 0)); // Set color for "Values" section
+        return chart;
+    }
+
+    private JFreeChart createPieChart3D(DefaultPieDataset dataset) {
+        JFreeChart chart = ChartFactory.createPieChart3D(
+                "PIE CHART 3-D",
+                dataset,
+                true,
+                true,
+                false
+        );
+
+        PiePlot3D plot = (PiePlot3D) chart.getPlot();
+        plot.setSectionPaint("Values", new Color(0, 255, 0)); // Set color for "Values" section
+        return chart;
+    }
+
+    private JFreeChart createBarChart(CategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createBarChart(
+                "BAR CHART 2-D",
+                "Category",
+                "Value",
+                dataset
+        );
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setSeriesPaint(0, new Color(0, 0, 255)); // Set color for the series
+        return chart;
+    }
+
+    private JFreeChart createBarChart3D(CategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createBarChart3D(
+                "BAR CHART 3-D",
+                "Category",
+                "Value",
+                dataset
+        );
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer3D renderer = (BarRenderer3D) plot.getRenderer();
+        renderer.setSeriesPaint(0, new Color(255, 255, 0)); // Set color for the series
+        return chart;
+    }
+
+    private JFreeChart createLineChart(CategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createLineChart(
+                "LINE CHART 2-D",
+                "Category",
+                "Value",
+                dataset
+        );
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+        renderer.setSeriesPaint(0, new Color(255, 0, 255)); // Set color for the series
+        return chart;
+    }
+
+    private JFreeChart createAreaChart(CategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createAreaChart(
+                "AREA CHART 2-D",
+                "Category",
+                "Value",
+                dataset
+        );
+
+        CategoryPlot plot = chart.getCategoryPlot();
+        AreaRenderer renderer = (AreaRenderer) plot.getRenderer();
+        renderer.setSeriesPaint(0, new Color(255, 165, 0)); // Set color for the series
+        return chart;
+    }
+
+    private JFreeChart createRingChart(DefaultPieDataset dataset) {
+        JFreeChart chart = ChartFactory.createRingChart(
+                "RING CHART 2-D",
+                dataset,
+                true,
+                true,
+                false
+        );
+
+        RingPlot plot = (RingPlot) chart.getPlot();
+        plot.setSectionPaint("Values", new Color(0, 128, 0)); // Set color for "Values" section
+        return chart;
+    }
+
+    private void updateChart() {
+        int selectedChart = chartTypeComboBox.getSelectedIndex();
+
+        switch (selectedChart) {
+            case 0:
+                chart = createPieChart(pieDataset);
+                break;
+            case 1:
+                chart = createPieChart3D(pieDataset);
+                break;
+            case 2:
+                chart = createBarChart(barDataset);
+                break;
+            case 3:
+                chart = createBarChart3D(barDataset);
+                break;
+            case 4:
+                chart = createLineChart(lineDataset);
+                break;
+            case 5:
+                chart = createAreaChart(areaDataset);
+                break;
+            case 6:
+                chart = createRingChart(ringDataset);
+                break;
+        }
+
+        chartPanel.setChart(chart);
+    }
+
+    private void addData() {
+        String category = JOptionPane.showInputDialog("Enter Category:");
+        String valueStr = JOptionPane.showInputDialog("Enter Value:");
+
+        if (category != null && valueStr != null && !category.isEmpty() && !valueStr.isEmpty()) {
+            double value = Double.parseDouble(valueStr);
+
+            tableModel.addRow(new Object[]{category, value});
+
+            pieDataset.setValue(category, value);
+            barDataset.addValue(value, "Values", category);
+            lineDataset.addValue(value, "Values", category);
+            areaDataset.addValue(value, "Values", category); // Add value to the area dataset
+            ringDataset.setValue(category, value); // Add value to the ring dataset
+
+            updateChart();
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid input. Please enter valid data.");
+        }
+    }
+
+    private void resetAllData() {
+        tableModel.setRowCount(0);
+        pieDataset.clear();
+        barDataset.clear();
+        lineDataset.clear();
+        areaDataset.clear(); // Clear the area dataset
+        ringDataset.clear(); // Clear the ring dataset
+
+        updateChart();
+    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new CombinedChart("DATA VISUALIZATION SYSTEM");
+            }
+        });
+    }
+}
